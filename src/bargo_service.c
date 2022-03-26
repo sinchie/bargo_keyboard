@@ -55,3 +55,9 @@ void bargo_idle_state_handle(void)
         nrf_pwr_mgmt_run();
     }
 }
+
+// 重启
+void bargo_reset(void)
+{
+    NVIC_SystemReset();
+}

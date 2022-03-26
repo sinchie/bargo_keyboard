@@ -97,6 +97,7 @@
       <file file_name="../vendor/nrf_sdk/modules/nrfx/drivers/src/nrfx_usbd.c" />
       <file file_name="../vendor/nrf_sdk/integration/nrfx/legacy/nrf_drv_power.c" />
       <file file_name="../vendor/nrf_sdk/modules/nrfx/drivers/src/nrfx_power.c" />
+      <file file_name="../vendor/nrf_sdk/modules/nrfx/drivers/src/nrfx_wdt.c" />
     </folder>
     <folder Name="Application">
       <file file_name="../src/main.c" />

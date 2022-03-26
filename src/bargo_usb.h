@@ -6,12 +6,12 @@
 /**
  * @brief HID generic class interface number.
  * */
-#define HID_GENERIC_INTERFACE  0
+#define HID_GENERIC_INTERFACE  3
 
 /**
  * @brief HID generic class endpoint number.
  * */
-#define HID_GENERIC_EPIN       NRF_DRV_USBD_EPIN1
+#define HID_GENERIC_EPIN       NRF_DRV_USBD_EPIN3
 
 /**
  * @brief Number of reports defined in report descriptor.
@@ -55,6 +55,10 @@ void bargo_usb_keys_send(uint8_t key_pattern_len, uint8_t * p_key_pattern);
 
 // usb事件处理主循环
 void bargo_usb_process();
+
+
+// usb是否通电
+bool usb_power_enable(void);
 
 #endif
 

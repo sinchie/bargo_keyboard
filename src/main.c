@@ -8,7 +8,6 @@
  */
 int main(void)
 {
-    // 基础服务
     // 初始化日志
     bargo_log_init();
     // 初始化定时器
@@ -38,6 +37,7 @@ int main(void)
     bargo_peer_manager_init();
     // 初始化蓝牙相关服务（队列、hid、电池）
     bargo_ble_services_init();
+
     
     // 初始化设备切换
     bargo_switch_init();

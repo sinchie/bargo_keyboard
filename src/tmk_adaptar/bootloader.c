@@ -1,10 +1,10 @@
 #include "bootloader.h"
 #include "nrf.h"
 #include "nrf_soc.h"
+#include "nrf_nvic.h"
 
 // adafruit bootloader, send "dfu" to debug serial port
-#define DFU_MAGIC_UF2_RESET             0x57
 void bootloader_jump(void) {
-    sd_power_gpregret_set(0, DFU_MAGIC_UF2_RESET);
-    NVIC_SystemReset();
+    NRF_POWER->GPREGRET = 0x57; // 0xA8 OTA, 0x4e Serial
+    NVIC_SystemReset();         // or sd_nvic_SystemReset();
 }

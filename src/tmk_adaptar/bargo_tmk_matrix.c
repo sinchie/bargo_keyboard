@@ -4,14 +4,12 @@
 #include "nrf_gpio.h"
 #include "wait.h"
 #include "bargo_config.h"
+#include "nrf_log.h"
 
 /*
  * scan matrix
  */
-#ifndef DEBOUNCE
-#define DEBOUNCE 5
-#endif
-static uint8_t debouncing = DEBOUNCE;
+static bool debouncing = false;
 
 /* matrix state(1:on, 0:off) */
 static matrix_row_t matrix[MATRIX_ROWS];
@@ -41,13 +39,13 @@ uint8_t matrix_cols(void)
 
 /* Column pin configuration
  */
-static void init_rows_cols(void)
+static void init_cols_rows(void)
 {
     for (uint8_t i = 0;  i < MATRIX_COLS; i++) {
-        nrf_gpio_cfg_input((uint32_t)col_pins[i], NRF_GPIO_PIN_PULLUP);
+        nrf_gpio_cfg_input(col_pins[i], NRF_GPIO_PIN_PULLUP);
     }
-    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        nrf_gpio_cfg_output((uint32_t)row_pins[i]);
+    for (uint8_t i = 0;  i < MATRIX_ROWS; i++) {
+        nrf_gpio_cfg_output(row_pins[i]);
     }
 }
 
@@ -77,9 +75,8 @@ static void select_row(uint8_t row)
 void matrix_init(void)
 {
     // initialize row and col
-    init_rows_cols();
+    init_cols_rows();
     unselect_rows();
-
     // initialize matrix state: all keys off
     for (uint8_t i=0; i < MATRIX_ROWS; i++) {
         matrix[i] = 0;
@@ -97,31 +94,20 @@ uint8_t matrix_scan(void)
 
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
-            if (debouncing) {
-                //debug("bounce!: "); debug_hex(debouncing); debug("\n");
-            }
-            debouncing = DEBOUNCE;
+            debouncing = true;
         }
         unselect_row(i);
     }
 
     if (debouncing) {
-        if (--debouncing) {
-            wait_ms(1);
-        } else {
-            for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-                matrix[i] = matrix_debouncing[i];
-            }
+        debouncing = false;
+    } else {
+        for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
+            matrix[i] = matrix_debouncing[i];
         }
     }
 
     return 1;
-}
-
-inline
-bool matrix_is_on(uint8_t row, uint8_t col)
-{
-    return (matrix[row] & ((matrix_row_t)1<<col));
 }
 
 inline
@@ -137,8 +123,9 @@ static matrix_row_t read_cols(void)
 {
     uint32_t result = 0;
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
-        if (!nrf_gpio_pin_read(((uint32_t)col_pins[i])))
+        if (!nrf_gpio_pin_read(((uint32_t)col_pins[i]))) {
             result |= 1 << i;
+        }
     }
 
     return result;

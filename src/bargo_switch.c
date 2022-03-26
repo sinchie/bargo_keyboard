@@ -67,7 +67,7 @@ bool bargo_switch_is_using_usb()
 /**
  * @brief 切换连接设备.
  *
- * @param[in] id  要切换的设备的ID号 [0-2]
+ * @param[in] id  要切换的设备的ID号 [0-3]
  */
 void bargo_switch_device_select(uint8_t id)
 {

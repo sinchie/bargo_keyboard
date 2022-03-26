@@ -19,4 +19,7 @@ void bargo_power_management_init(void);
  */
 void bargo_idle_state_handle(void);
 
+// 重启
+void bargo_reset(void);
+
 #endif

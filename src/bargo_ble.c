@@ -1,4 +1,5 @@
 #include "bargo_ble.h"
+#include "bargo_service.h"
 
 /**
  * @brief 根据当前的设备ID设置蓝牙地址
@@ -68,7 +69,6 @@ static void delete_bonds(void)
 static uint8_t bargo_switch_peer_filter(pm_peer_id_t* peer_ids, uint8_t peer_id_count)
 {
     if (!bargo_switch_device_ble_paired()) {
-        NRF_LOG_INFO("bargo_switch_peer_filter new device");
         return 0;
     }
 
@@ -82,7 +82,6 @@ static uint8_t bargo_switch_peer_filter(pm_peer_id_t* peer_ids, uint8_t peer_id_
 
     // 没有可用配对ID，设置当前设备配对无效
     bargo_switch_invalidate_ble_peerid();
-    NRF_LOG_INFO("bargo_switch_peer_filter new device");
 
     return 0;
 }
@@ -163,13 +162,10 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
         case PM_EVT_CONN_SEC_SUCCEEDED:
             m_peer_id = p_evt->peer_id;
             // 更新设备配对ID
-            NRF_LOG_INFO("bargo_switch_set_ble_peerid peer_id: %d", (uint16_t)p_evt->peer_id);
             bargo_switch_set_ble_peerid((uint16_t)m_peer_id);
             break;
 
         case PM_EVT_PEER_DELETE_SUCCEEDED:
-            // 删除配对
-            NRF_LOG_INFO("PM_EVT_PEERS_DELETE_SUCCEEDED bargo");
             // 断开连接
             bargo_ble_disconnect();
             // 重新广播
@@ -183,7 +179,6 @@ static void pm_evt_handler(pm_evt_t const * p_evt)
                 NRF_LOG_INFO("New Bond, add the peer to the whitelist if possible");
                 // Note: You should check on what kind of white list policy your application should use.
                 // 更新设备配对ID
-                NRF_LOG_INFO("bargo_switch_set_ble_peerid peer_id: %d", (uint16_t)p_evt->peer_id);
                 bargo_switch_set_ble_peerid((uint16_t)p_evt->peer_id);
                 
                 whitelist_set(PM_PEER_ID_LIST_SKIP_NO_ID_ADDR);
@@ -504,7 +499,7 @@ void bargo_sleep_mode_enter(void)
     matrix_wakeup_prepare();
 
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
+    sd_power_system_off();
     APP_ERROR_CHECK(err_code);
 }
 
@@ -892,12 +887,12 @@ static void bargo_battery_level_update(void)
     NRF_LOG_INFO("BATTERY VAL: %d mV", cur_battery_mv);
 
     battery_level = 0;
-    if (cur_battery_mv >= 4150) {
+    if (cur_battery_mv >= 4100) {
       battery_level = 100;
-    } else if(cur_battery_mv <= 3000) {
+    } else if(cur_battery_mv <= 2900) {
       battery_level = 0;
     } else {
-      battery_level = (cur_battery_mv - 3000)*100/(4150-3000);
+      battery_level = (cur_battery_mv - 2900)*100/(4100-2900);
     }
 
     if (battery_level == 0) {
@@ -921,7 +916,9 @@ static void bargo_battery_level_update(void)
 static void bargo_battery_level_meas_timeout_handler(void * p_context)
 {
     UNUSED_PARAMETER(p_context);
-    bargo_battery_level_update();
+    if(!bargo_switch_is_using_usb()) {
+        bargo_battery_level_update();
+    }
 }
 
 // 初始化电量检测
@@ -950,7 +947,7 @@ void bargo_battery_level_init()
 }
 
 // 删除绑定
-void delete_bond()
+void bargo_delete_bond()
 {
     ret_code_t err_code;
 
@@ -962,8 +959,6 @@ void delete_bond()
     if (bargo_switch_is_using_usb()) {
         return;
     }
-
-    NRF_LOG_INFO("Erase bond! peerID: %d, device: %d", m_peer_id, bargo_switch_get_device());
 
 
     // 删除配对ID

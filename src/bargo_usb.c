@@ -41,8 +41,15 @@ APP_USBD_HID_GENERIC_GLOBAL_DEF(m_app_hid_generic,
                                 APP_USBD_HID_SUBCLASS_BOOT,
                                 APP_USBD_HID_PROTO_KEYBOARD);
 
-// usb是否可以使用
-static bool usb_can_use = false;
+// usb是否通电
+static bool usb_power = false;
+
+// usb是否通电
+bool usb_power_enable(void)
+{
+    return usb_power;
+}
+
 /**
  * @brief Class specific event handler.
  *
@@ -67,12 +74,16 @@ static void hid_user_ev_handler(app_usbd_class_inst_t const * p_inst,
         case APP_USBD_HID_USER_EVT_SET_BOOT_PROTO:
         {
             UNUSED_RETURN_VALUE(hid_generic_clear_buffer(p_inst));
+            // TODO
+            //hid_generic_on_set_protocol(&m_app_hid_generic, APP_USBD_HID_USER_EVT_SET_BOOT_PROTO);
             NRF_LOG_INFO("SET_BOOT_PROTO");
             break;
         }
         case APP_USBD_HID_USER_EVT_SET_REPORT_PROTO:
         {
             UNUSED_RETURN_VALUE(hid_generic_clear_buffer(p_inst));
+            // TODO
+            //hid_generic_on_set_protocol(&m_app_hid_generic, APP_USBD_HID_USER_EVT_SET_REPORT_PROTO);
             NRF_LOG_INFO("SET_REPORT_PROTO");
             break;
         }
@@ -116,12 +127,12 @@ static void usbd_user_ev_handler(app_usbd_event_type_t event)
         case APP_USBD_EVT_POWER_REMOVED:
             NRF_LOG_INFO("USB power removed");
             app_usbd_stop();
-            usb_can_use = false;
+            usb_power = false;
             break;
         case APP_USBD_EVT_POWER_READY:
             NRF_LOG_INFO("USB ready");
             app_usbd_start();
-            usb_can_use = true;
+            usb_power = true;
             break;
         default:
             break;
@@ -176,7 +187,7 @@ void bargo_usb_init()
 // usb发送按键
 void bargo_usb_keys_send(uint8_t key_pattern_len, uint8_t * p_key_pattern)
 {
-    if(!usb_can_use) {
+    if(!usb_power) {
         return;
     }
 

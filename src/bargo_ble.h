@@ -43,9 +43,8 @@
 #include "bargo_config.h"
 #include "bargo_keyboard.h"
 
-
 // 蓝牙设备名称
-#define DEVICE_NAME                         "Bargo_Keyboard"                          /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                         PRODUCT                                    /**< Name of device. Will be included in the advertising data. */
 
 // 应用观察者优先级
 #define APP_BLE_OBSERVER_PRIO               3                                          /**< Application's BLE observer priority. You shouldn't need to modify this value. */
@@ -64,9 +63,6 @@
 #define MAX_CONN_INTERVAL                   MSEC_TO_UNITS(30, UNIT_1_25_MS)            /**< Maximum connection interval (30 ms). */
 #define SLAVE_LATENCY                       6                                          /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                    MSEC_TO_UNITS(430, UNIT_10_MS)             /**< Connection supervisory timeout (430 ms). */
-
-// 电量检测间隔时间（毫秒）
-#define BATTERY_LEVEL_MEAS_INTERVAL         APP_TIMER_TICKS(30000)
 
 // 蓝牙绑定相关参数
 #define SEC_PARAM_BOND                      1                                          /**< Perform bonding. */
@@ -200,7 +196,7 @@ void bargo_battery_level_init();
 void bargo_ble_disconnect();
 
 // 删除绑定
-void delete_bond(void);
+void bargo_delete_bond(void);
 
 // 睡眠模式
 void bargo_sleep_mode_enter(void);
