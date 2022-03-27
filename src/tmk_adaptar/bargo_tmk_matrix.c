@@ -42,6 +42,13 @@ uint8_t matrix_cols(void)
 static void init_cols_rows(void)
 {
     for (uint8_t i = 0;  i < MATRIX_COLS; i++) {
+        nrf_gpio_cfg_default(col_pins[i]);
+    }
+    for (uint8_t i = 0;  i < MATRIX_ROWS; i++) {
+        nrf_gpio_cfg_default(row_pins[i]);
+    }
+
+    for (uint8_t i = 0;  i < MATRIX_COLS; i++) {
         nrf_gpio_cfg_input(col_pins[i], NRF_GPIO_PIN_PULLUP);
     }
     for (uint8_t i = 0;  i < MATRIX_ROWS; i++) {

@@ -1,5 +1,6 @@
 #include "bargo_ble.h"
 #include "bargo_service.h"
+#include "nrf_delay.h"
 
 /**
  * @brief 根据当前的设备ID设置蓝牙地址
@@ -491,7 +492,6 @@ void bargo_sleep_mode_enter(void)
 {
     ret_code_t err_code;
 
-    // 停止所有定时器
     err_code = app_timer_stop_all();
     APP_ERROR_CHECK(err_code);
 

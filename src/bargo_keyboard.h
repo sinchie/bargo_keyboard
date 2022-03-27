@@ -27,5 +27,8 @@ void bargo_keyboard_reset_slow_counter();
 // 初始化看门狗
 void bargo_keyboard_wdt_init(void);
 
+// 游戏模式开关
+void bargo_ble_game_mode_toggle();
+
 #endif
 

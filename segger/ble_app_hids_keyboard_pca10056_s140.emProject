@@ -119,14 +119,14 @@
       <file file_name="../src/bargo_storage.h" />
       <file file_name="../src/bargo_switch.h" />
       <file file_name="../src/bargo_switch.c" />
-      <file file_name="../src/bargo_usb.h" />
-      <file file_name="../src/bargo_usb.c" />
       <file file_name="../src/bargo_ble.c" />
       <file file_name="../src/bargo_ble.h" />
       <file file_name="../src/bargo_keyboard.c" />
       <file file_name="../src/bargo_keyboard.h" />
       <file file_name="../src/bargo_service.h" />
       <file file_name="../src/bargo_service.c" />
+      <file file_name="../src/bargo_usb.c" />
+      <file file_name="../src/bargo_usb.h" />
     </folder>
     <folder Name="nRF_Segger_RTT">
       <file file_name="../vendor/nrf_sdk/external/segger_rtt/SEGGER_RTT.c" />

@@ -7736,7 +7736,7 @@
 #endif
 // <o> NRF_LOG_BACKEND_UART_TX_PIN - UART TX pin 
 #ifndef NRF_LOG_BACKEND_UART_TX_PIN
-#define NRF_LOG_BACKEND_UART_TX_PIN 42
+#define NRF_LOG_BACKEND_UART_TX_PIN 24
 #endif
 
 // <o> NRF_LOG_BACKEND_UART_BAUDRATE  - Default Baudrate
@@ -9460,6 +9460,13 @@
 #endif
 
 // </e>
+
+// <q> APP_USBD_DUMMY_ENABLED  - app_usbd_dummy - USBD Dummy class
+ 
+
+#ifndef APP_USBD_DUMMY_ENABLED
+#define APP_USBD_DUMMY_ENABLED 1
+#endif
 
 // <e> APP_USBD_DUMMY_CONFIG_LOG_ENABLED - Enables logging in the module.
 //==========================================================

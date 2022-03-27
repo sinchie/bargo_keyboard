@@ -592,6 +592,54 @@ static ret_code_t hid_kbd_on_idle(app_usbd_class_inst_t const * p_inst, uint8_t 
     return NRF_SUCCESS;
 }
 
+
+// 自定义部分开始
+#include "host.h"
+
+#define QUEUE_LEN 16
+static report_keyboard_t report_buf[QUEUE_LEN];
+static uint8_t widx, ridx, cnt;
+
+static bool flag_usb_sending=false;
+
+void usbd_clear_sending_flag() {
+  flag_usb_sending = false;
+}
+
+int usbd_send_kbd_report(app_usbd_hid_kbd_t const *  p_kbd, report_keyboard_t *report) {
+  app_usbd_hid_kbd_ctx_t * p_kbd_ctx   = hid_kbd_ctx_get(p_kbd);
+  app_usbd_hid_report_buffer_t const * rep_buffer = hid_kbd_rep_buffer_get(p_kbd);
+  uint8_t ret = 0;
+  if (flag_usb_sending) {
+    memcpy((uint8_t*)&report_buf[widx++], report, sizeof(report_keyboard_t));
+    widx %= QUEUE_LEN;
+    cnt++;
+    return 1;
+  }
+  memcpy((uint8_t*)&p_kbd_ctx->rep, report, rep_buffer->size);
+  ret = hid_kbd_transfer_set(p_kbd);
+  if (ret == NRF_SUCCESS &&
+    app_usbd_hid_state_flag_test(&p_kbd_ctx->hid_ctx, APP_USBD_HID_STATE_FLAG_TRANS_IN_PROGRESS)) {
+    flag_usb_sending = true;
+  } else {
+    flag_usb_sending = false;
+  }
+  return ret;
+}
+
+int usbd_send_keyboard_buffered(app_usbd_hid_kbd_t const *  p_kbd) {
+  report_keyboard_t report;
+  if (cnt) {
+    memcpy(&report, (uint8_t*)&report_buf[ridx++], sizeof(report_keyboard_t));
+    ridx %= QUEUE_LEN;
+    cnt--;
+    usbd_send_kbd_report(p_kbd, &report);
+  }
+  return 0;
+}
+// 自定义部分结束
+
+
 /** @} */
 
 const app_usbd_hid_methods_t app_usbd_hid_kbd_methods = {

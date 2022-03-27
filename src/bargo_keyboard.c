@@ -13,13 +13,17 @@
 // 矩阵扫描定时器
 APP_TIMER_DEF(m_matrix_scan_timer_id);
 
+
+// 游戏模式flag
+static bool ble_game_mode = false;
+
 // 睡眠计数器
 static uint32_t sleep_counter;
 
 // 慢速计数器
 static uint32_t slow_counter;
 // 是否在慢速扫描模式中
-static bool in_slow_scan_mode;
+static bool in_slow_scan_mode = false;
 
 // 看门狗
 #ifdef BARGO_WATCH_DOG_ENABLE
@@ -49,11 +53,10 @@ void bargo_watch_dog_init()
 #endif
 
 // 发送键盘按键
-bool bargo_keyboard_send_report(report_keyboard_t *report) {
-    uint64_t result =0;
-    for (uint8_t i = 0; i < 8; i++) {
-       result |= report->raw[i] << (8 * i);
-    }
+bool bargo_keyboard_send_report(report_keyboard_t *report)
+{
+
+    NRF_LOG_INFO("bargo_keyboard_send_report %d", report);
 
     // 重置慢速扫描计数
     bargo_keyboard_reset_slow_counter();
@@ -61,11 +64,15 @@ bool bargo_keyboard_send_report(report_keyboard_t *report) {
     bargo_keyboard_reset_sleep_counter();
 
     // 发送按键
-    if(bargo_switch_is_using_usb()) {
+    if(bargo_switch_is_using_usb() && usb_power_enable()) {
         // usb发送按键
-        bargo_usb_keys_send(8, report->raw);
+        bargo_usb_keys_send(report);
     } else {
         // 蓝牙发送按键
+        uint64_t result =0;
+        for (uint8_t i = 0; i < 8; i++) {
+           result |= report->raw[i] << (8 * i);
+        }
         bargo_ble_keys_send(8, report->raw);
     }
    
@@ -97,7 +104,7 @@ static void bargo_keyboard_tick_handler(void * p_context)
     if (slow_counter >= KEYBOARD_MATRIX_IDLE_SLOW_SECOND) {
         slow_counter = KEYBOARD_MATRIX_IDLE_SLOW_SECOND;
         // 进入慢速扫描
-        if (!in_slow_scan_mode) {
+        if (!in_slow_scan_mode && !usb_power_enable() && !ble_game_mode) {
             in_slow_scan_mode = true;
             err_code = app_timer_stop(m_matrix_scan_timer_id);
             APP_ERROR_CHECK(err_code);
@@ -123,6 +130,12 @@ static void bargo_keyboard_tick_handler(void * p_context)
             bargo_sleep_mode_enter();
         }
     }
+}
+
+// 游戏模式开关
+void bargo_ble_game_mode_toggle()
+{
+    ble_game_mode = !ble_game_mode;
 }
 
 // 重置慢速扫描计数
@@ -154,6 +167,7 @@ void bargo_keyboard_martix_sacn_init()
 
     err_code = app_timer_start(m_matrix_scan_timer_id, KEYBOARD_MATRIX_SCAN_INTERVAL_SLOW, NULL);
     APP_ERROR_CHECK(err_code);
+    in_slow_scan_mode = true;
 
     // 键盘tick定时器
     err_code = app_timer_create(&m_keyboard_tick_timer_id,
@@ -175,12 +189,19 @@ void bargo_keyboard_martix_sacn_init()
  */
 void matrix_wakeup_prepare(void)
 {
+    for (uint8_t i = 0;  i < MATRIX_COLS; i++) {
+        nrf_gpio_cfg_default(col_pins[i]);
+    }
+    for (uint8_t i = 0;  i < MATRIX_ROWS; i++) {
+        nrf_gpio_cfg_default(row_pins[i]);
+    }
+
     // 监听所有按键作为唤醒按键
     for (uint8_t i = 0; i < MATRIX_COLS; i++) {
-        nrf_gpio_cfg_sense_input(col_pins[i], NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+        nrf_gpio_cfg_sense_input(col_pins[i], NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
     }
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         nrf_gpio_cfg_output(row_pins[i]);
-        nrf_gpio_pin_set(row_pins[i]);
+        nrf_gpio_pin_clear(row_pins[i]);
     }
 }
