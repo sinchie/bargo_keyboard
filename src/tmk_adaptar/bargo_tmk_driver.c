@@ -36,8 +36,10 @@ static void send_mouse(report_mouse_t *report)
 
 static void send_system(uint16_t data)
 {
+    bargo_keyboard_system_send_report(data);
 }
 
 static void send_consumer(uint16_t data)
 {
+    bargo_keyboard_media_send_report(data);
 }

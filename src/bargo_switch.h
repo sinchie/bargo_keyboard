@@ -24,9 +24,10 @@
 #define BARGO_SWITCH_INDEX_BLE1 1
 #define BARGO_SWITCH_INDEX_BLE2 2 
 #define BARGO_SWITCH_INDEX_BLE3 3 
+#define BARGO_SWITCH_INDEX_BLE4 4
 
 // 总切换设备数量（USB+蓝牙设备数量）
-#define BARGO_SWITCH_DEVICE_COUNT 4
+#define BARGO_SWITCH_DEVICE_COUNT 5
 
 // 蓝牙切换状态数据结构
 typedef struct

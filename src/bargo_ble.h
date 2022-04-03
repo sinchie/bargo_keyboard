@@ -42,6 +42,8 @@
 // 全局配置
 #include "bargo_config.h"
 #include "bargo_keyboard.h"
+#include "bargo_ble_hid_desc.h"
+#include "report.h"
 
 // 蓝牙设备名称
 #define DEVICE_NAME                         PRODUCT                                    /**< Name of device. Will be included in the advertising data. */
@@ -77,9 +79,6 @@
 // 蓝牙HID相关参数
 #define OUTPUT_REPORT_INDEX                 0                                          /**< Index of Output Report. */
 #define OUTPUT_REPORT_MAX_LEN               1                                          /**< Maximum length of Output Report. */
-#define INPUT_REPORT_KEYS_INDEX             0                                          /**< Index of Input Report. */
-#define OUTPUT_REPORT_BIT_MASK_CAPS_LOCK    0x02                                       /**< CAPS LOCK bit in Output Report (based on 'LED Page (0x08)' of the Universal Serial Bus HID Usage Tables). */
-#define INPUT_REP_REF_ID                    0                                          /**< Id of reference to Keyboard Input Report. */
 #define OUTPUT_REP_REF_ID                   0                                          /**< Id of reference to Keyboard Output Report. */
 #define FEATURE_REP_REF_ID                  0                                          /**< ID of reference to Keyboard Feature Report. */
 #define FEATURE_REPORT_MAX_LEN              2                                          /**< Maximum length of Feature Report. */
@@ -102,7 +101,7 @@ BLE_HIDS_DEF(m_hids,                                                /**< Structu
              NRF_SDH_BLE_TOTAL_LINK_COUNT,
              INPUT_REPORT_KEYS_MAX_LEN,
              OUTPUT_REPORT_MAX_LEN,
-             FEATURE_REPORT_MAX_LEN);
+             FEATURE_REPORT_MAX_LEN, SYSTEM_REPORT_SIZE, CONSUMER_REPORT_SIZE);
 // 电量服务
 BLE_BAS_DEF(m_bas);                                                 /**< Structure used to identify the battery service. */
 // GATT服务
@@ -121,6 +120,7 @@ static pm_peer_id_t      m_peer_id;                                 /**< Device 
 
 // 蓝牙广播的UUID类型
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE}};
+
 
 // hid事件回调
 static void on_hids_evt(ble_hids_t * p_hids, ble_hids_evt_t * p_evt);
@@ -165,29 +165,14 @@ void bargo_peer_manager_init(void);
  */
 void bargo_advertising_start(void);
 
-/**@brief   Function for transmitting a key scan Press & Release Notification.
- *
- * @warning This handler is an example only. You need to analyze how you wish to send the key
- *          release.
- *
- * @param[in]  p_instance     Identifies the service for which Key Notifications are requested.
- * @param[in]  p_key_pattern  Pointer to key pattern.
- * @param[in]  pattern_len    Length of key pattern. 0 < pattern_len < 7.
- * @return     NRF_SUCCESS on success, NRF_ERROR_RESOURCES in case transmission could not be
- *             completed due to lack of transmission buffer or other error codes indicating reason
- *             for failure.
- */
-uint32_t bargo_send_key_scan_press_release(ble_hids_t * p_hids,
-                                            uint8_t    * p_key_pattern,
-                                            uint16_t     pattern_len);
+// 发送按键
+void bargo_ble_keys_send(report_keyboard_t *report);
 
+// 发送系统按键
+void bargo_ble_send_system(uint16_t data);
 
-/**@brief Function for sending sample key presses to the peer.
- *
- * @param[in]   key_pattern_len   Pattern length.
- * @param[in]   p_key_pattern     Pattern to be sent.
- */
-void bargo_ble_keys_send(uint8_t key_pattern_len, uint8_t * p_key_pattern);
+// 发送媒体按键
+void bargo_ble_send_consumer(uint16_t data);
 
 // 初始化电量检测
 void bargo_battery_level_init();

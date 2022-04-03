@@ -45,7 +45,7 @@ static const uint8_t col_pins[MATRIX_COLS] = {
 #define BARGO_KEYBOARD_IDLE_SLEEP_SECOND 600
 
 // 键盘矩阵扫描间隔（毫秒）快速
-#define KEYBOARD_MATRIX_SCAN_INTERVAL_FAST  APP_TIMER_TICKS(4)
+#define KEYBOARD_MATRIX_SCAN_INTERVAL_FAST  APP_TIMER_TICKS(1)
 
 // 键盘矩阵扫描间隔（毫秒）慢速
 #define KEYBOARD_MATRIX_SCAN_INTERVAL_SLOW  APP_TIMER_TICKS(30)
@@ -55,6 +55,9 @@ static const uint8_t col_pins[MATRIX_COLS] = {
 
 // 开启看门狗
 #define BARGO_WATCH_DOG_ENABLE
+
+// 扩展按键
+#define EXTRAKEY_ENABLE
 
 // 关闭TMK调试
 #define NO_DEBUG

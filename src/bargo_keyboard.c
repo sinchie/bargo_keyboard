@@ -52,28 +52,73 @@ void bargo_watch_dog_init()
 
 #endif
 
-// 发送键盘按键
-bool bargo_keyboard_send_report(report_keyboard_t *report)
+// 重置计数器
+static bool bargo_reset_counter()
 {
-
-    NRF_LOG_INFO("bargo_keyboard_send_report %d", report);
-
     // 重置慢速扫描计数
     bargo_keyboard_reset_slow_counter();
     // 重置休眠计数
     bargo_keyboard_reset_sleep_counter();
+}
 
-    // 发送按键
+// 是否应该发送usb
+static bool bargo_should_send_usb()
+{
     if(bargo_switch_is_using_usb() && usb_power_enable()) {
+        return true;
+    }
+
+    return false;
+}
+
+// 发送键盘按键
+bool bargo_keyboard_send_report(report_keyboard_t *report)
+{
+    // 重置计数器
+    bargo_reset_counter();
+    // 发送按键
+    if(bargo_should_send_usb()) {
         // usb发送按键
         bargo_usb_keys_send(report);
     } else {
         // 蓝牙发送按键
-        uint64_t result =0;
-        for (uint8_t i = 0; i < 8; i++) {
-           result |= report->raw[i] << (8 * i);
-        }
-        bargo_ble_keys_send(8, report->raw);
+        bargo_ble_keys_send(report);
+    }
+   
+    return true;
+}
+
+// 发送 system 键盘按键
+bool bargo_keyboard_system_send_report(uint16_t data)
+{
+    // 重置计数器
+    bargo_reset_counter();
+
+    // 发送按键
+    if(bargo_should_send_usb()) {
+        // usb发送按键
+        bargo_usb_send_system(data);
+    } else {
+        // 蓝牙发送按键
+        bargo_ble_send_system(data);
+    }
+   
+    return true;
+}
+
+// 发送 media 键盘按键
+bool bargo_keyboard_media_send_report(uint16_t data)
+{
+    // 重置计数器
+    bargo_reset_counter();
+
+    // 发送按键
+    if(bargo_should_send_usb()) {
+        // usb发送按键
+        bargo_usb_send_consumer(data);
+    } else {
+        // 蓝牙发送按键
+        bargo_ble_send_consumer(data);
     }
    
     return true;

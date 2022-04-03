@@ -12,6 +12,12 @@ APP_TIMER_DEF(m_keyboard_tick_timer_id);
 // 发送键盘按键
 bool bargo_keyboard_send_report(report_keyboard_t *report);
 
+// 发送 system 键盘按键
+bool bargo_keyboard_system_send_report(uint16_t data);
+
+// 发送 media 键盘按键
+bool bargo_keyboard_media_send_report(uint16_t data);
+
 // 键盘矩阵扫描初始化
 void bargo_keyboard_martix_sacn_init();
 

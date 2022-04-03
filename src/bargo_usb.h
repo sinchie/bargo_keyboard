@@ -10,6 +10,12 @@ void bargo_usb_init(void);
 // usb发送按键
 void bargo_usb_keys_send(report_keyboard_t *report);
 
+// usb发送系统按键
+int bargo_usb_send_system(uint16_t data);
+
+// usb发送媒体按键
+int bargo_usb_send_consumer(uint16_t data);
+
 // usb事件处理主循环
 void bargo_usb_process(void);
 

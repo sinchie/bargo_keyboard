@@ -326,66 +326,35 @@ static void hids_init(void)
     ble_hids_feature_rep_init_t * p_feature_report;
     uint8_t                       hid_info_flags;
 
-    static ble_hids_inp_rep_init_t     input_report_array[1];
+    static ble_hids_inp_rep_init_t     input_report_array[COMPOSITE_REPORT_COUNT];
     static ble_hids_outp_rep_init_t    output_report_array[1];
     static ble_hids_feature_rep_init_t feature_report_array[1];
-    static uint8_t                     report_map_data[] =
-    {
-        0x05, 0x01,       // Usage Page (Generic Desktop)
-        0x09, 0x06,       // Usage (Keyboard)
-        0xA1, 0x01,       // Collection (Application)
-        0x05, 0x07,       // Usage Page (Key Codes)
-        0x19, 0xe0,       // Usage Minimum (224)
-        0x29, 0xe7,       // Usage Maximum (231)
-        0x15, 0x00,       // Logical Minimum (0)
-        0x25, 0x01,       // Logical Maximum (1)
-        0x75, 0x01,       // Report Size (1)
-        0x95, 0x08,       // Report Count (8)
-        0x81, 0x02,       // Input (Data, Variable, Absolute)
-
-        0x95, 0x01,       // Report Count (1)
-        0x75, 0x08,       // Report Size (8)
-        0x81, 0x01,       // Input (Constant) reserved byte(1)
-
-        0x95, 0x05,       // Report Count (5)
-        0x75, 0x01,       // Report Size (1)
-        0x05, 0x08,       // Usage Page (Page# for LEDs)
-        0x19, 0x01,       // Usage Minimum (1)
-        0x29, 0x05,       // Usage Maximum (5)
-        0x91, 0x02,       // Output (Data, Variable, Absolute), Led report
-        0x95, 0x01,       // Report Count (1)
-        0x75, 0x03,       // Report Size (3)
-        0x91, 0x01,       // Output (Data, Variable, Absolute), Led report padding
-
-        0x95, 0x06,       // Report Count (6)
-        0x75, 0x08,       // Report Size (8)
-        0x15, 0x00,       // Logical Minimum (0)
-        0x25, 0x65,       // Logical Maximum (101)
-        0x05, 0x07,       // Usage Page (Key codes)
-        0x19, 0x00,       // Usage Minimum (0)
-        0x29, 0x65,       // Usage Maximum (101)
-        0x81, 0x00,       // Input (Data, Array) Key array(6 bytes)
-
-        0x09, 0x05,       // Usage (Vendor Defined)
-        0x15, 0x00,       // Logical Minimum (0)
-        0x26, 0xFF, 0x00, // Logical Maximum (255)
-        0x75, 0x08,       // Report Size (8 bit)
-        0x95, 0x02,       // Report Count (2)
-        0xB1, 0x02,       // Feature (Data, Variable, Absolute)
-
-        0xC0              // End Collection (Application)
-    };
 
     memset((void *)input_report_array, 0, sizeof(ble_hids_inp_rep_init_t));
     memset((void *)output_report_array, 0, sizeof(ble_hids_outp_rep_init_t));
     memset((void *)feature_report_array, 0, sizeof(ble_hids_feature_rep_init_t));
 
     // Initialize HID Service
-    p_input_report                      = &input_report_array[INPUT_REPORT_KEYS_INDEX];
+    p_input_report                      = &input_report_array[COMPOSITE_REPORT_INDEX_KEYBOARD];
     p_input_report->max_len             = INPUT_REPORT_KEYS_MAX_LEN;
-    p_input_report->rep_ref.report_id   = INPUT_REP_REF_ID;
+    p_input_report->rep_ref.report_id   = COMPOSITE_REPORT_ID_KEYBOARD;
     p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
+    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
+    p_input_report->sec.wr      = SEC_JUST_WORKS;
+    p_input_report->sec.rd      = SEC_JUST_WORKS;
 
+    p_input_report                      = &input_report_array[COMPOSITE_REPORT_INDEX_SYSTEM];
+    p_input_report->max_len             = SYSTEM_REPORT_SIZE;
+    p_input_report->rep_ref.report_id   = COMPOSITE_REPORT_ID_SYSTEM;
+    p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
+    p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
+    p_input_report->sec.wr      = SEC_JUST_WORKS;
+    p_input_report->sec.rd      = SEC_JUST_WORKS;
+
+    p_input_report                      = &input_report_array[COMPOSITE_REPORT_INDEX_CONSUMER];
+    p_input_report->max_len             = CONSUMER_REPORT_SIZE;
+    p_input_report->rep_ref.report_id   = COMPOSITE_REPORT_ID_CONSUMER;
+    p_input_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_INPUT;
     p_input_report->sec.cccd_wr = SEC_JUST_WORKS;
     p_input_report->sec.wr      = SEC_JUST_WORKS;
     p_input_report->sec.rd      = SEC_JUST_WORKS;
@@ -394,7 +363,6 @@ static void hids_init(void)
     p_output_report->max_len             = OUTPUT_REPORT_MAX_LEN;
     p_output_report->rep_ref.report_id   = OUTPUT_REP_REF_ID;
     p_output_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_OUTPUT;
-
     p_output_report->sec.wr = SEC_JUST_WORKS;
     p_output_report->sec.rd = SEC_JUST_WORKS;
 
@@ -402,7 +370,6 @@ static void hids_init(void)
     p_feature_report->max_len             = FEATURE_REPORT_MAX_LEN;
     p_feature_report->rep_ref.report_id   = FEATURE_REP_REF_ID;
     p_feature_report->rep_ref.report_type = BLE_HIDS_REP_TYPE_FEATURE;
-
     p_feature_report->sec.rd              = SEC_JUST_WORKS;
     p_feature_report->sec.wr              = SEC_JUST_WORKS;
 
@@ -414,14 +381,14 @@ static void hids_init(void)
     hids_init_obj.error_handler                  = service_error_handler;
     hids_init_obj.is_kb                          = true;
     hids_init_obj.is_mouse                       = false;
-    hids_init_obj.inp_rep_count                  = 1;
+    hids_init_obj.inp_rep_count                  = COMPOSITE_REPORT_COUNT;
     hids_init_obj.p_inp_rep_array                = input_report_array;
     hids_init_obj.outp_rep_count                 = 1;
     hids_init_obj.p_outp_rep_array               = output_report_array;
     hids_init_obj.feature_rep_count              = 1;
     hids_init_obj.p_feature_rep_array            = feature_report_array;
-    hids_init_obj.rep_map.data_len               = sizeof(report_map_data);
-    hids_init_obj.rep_map.p_data                 = report_map_data;
+    hids_init_obj.rep_map.data_len               = sizeof(composite_report_map);
+    hids_init_obj.rep_map.p_data                 = (uint8_t*) composite_report_map;
     hids_init_obj.hid_information.bcd_hid        = BASE_USB_HID_SPEC_VERSION;
     hids_init_obj.hid_information.b_country_code = 0;
     hids_init_obj.hid_information.flags          = hid_info_flags;
@@ -459,18 +426,27 @@ void bargo_ble_services_init(void)
 }
 
 
-/**@brief Function for sending sample key presses to the peer.
- *
- * @param[in]   key_pattern_len   Pattern length.
- * @param[in]   p_key_pattern     Pattern to be sent.
- */
-void bargo_ble_keys_send(uint8_t key_pattern_len, uint8_t * p_key_pattern)
+// 发送按键
+void bargo_ble_keys_send(report_keyboard_t *report)
 {
     ret_code_t err_code;
 
-    err_code = bargo_send_key_scan_press_release(&m_hids,
-                                           p_key_pattern,
-                                           key_pattern_len);
+    if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
+        return;
+    }
+    // bios模式
+    if (m_in_boot_mode) {
+        err_code = ble_hids_boot_kb_inp_rep_send(&m_hids,
+            INPUT_REPORT_KEYS_MAX_LEN,
+            report->raw,
+            m_conn_handle);
+    } else { // 正常模式
+        err_code = ble_hids_inp_rep_send(&m_hids,
+            COMPOSITE_REPORT_INDEX_KEYBOARD,
+            INPUT_REPORT_KEYS_MAX_LEN,
+            report->raw,
+            m_conn_handle);
+    }
 
     if ((err_code != NRF_SUCCESS) &&
         (err_code != NRF_ERROR_INVALID_STATE) &&
@@ -798,45 +774,6 @@ void bargo_advertising_init(void)
     ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
 }
 
-
-/**@brief   Function for transmitting a key scan Press & Release Notification.
- *
- * @warning This handler is an example only. You need to analyze how you wish to send the key
- *          release.
- *
- * @param[in]  p_instance     Identifies the service for which Key Notifications are requested.
- * @param[in]  p_key_pattern  Pointer to key pattern.
- * @param[in]  pattern_len    Length of key pattern. 0 < pattern_len < 7.
- * @param[in]  pattern_offset Offset applied to Key Pattern for transmission.
- * @return     NRF_SUCCESS on success, NRF_ERROR_RESOURCES in case transmission could not be
- *             completed due to lack of transmission buffer or other error codes indicating reason
- *             for failure.
- */
-uint32_t bargo_send_key_scan_press_release(ble_hids_t * p_hids,
-                                      uint8_t    * p_key_pattern,
-                                      uint16_t     pattern_len)
-{
-    ret_code_t err_code = NRF_SUCCESS;
-
-    if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
-        return err_code;
-    }
-    // bios模式
-    if (m_in_boot_mode) {
-        err_code = ble_hids_boot_kb_inp_rep_send(p_hids,
-            pattern_len,
-            p_key_pattern,
-            m_conn_handle);
-    } else { // 正常模式
-        err_code = ble_hids_inp_rep_send(p_hids,
-            0,
-            pattern_len,
-            p_key_pattern,
-            m_conn_handle);
-    }
-    return err_code;
-}
-
 /**
  * @brief 断开某个设备的连接
  * 
@@ -887,12 +824,12 @@ static void bargo_battery_level_update(void)
     NRF_LOG_INFO("BATTERY VAL: %d mV", cur_battery_mv);
 
     battery_level = 0;
-    if (cur_battery_mv >= 4100) {
+    if (cur_battery_mv >= 4150) {
       battery_level = 100;
     } else if(cur_battery_mv <= 2900) {
       battery_level = 0;
     } else {
-      battery_level = (cur_battery_mv - 2900)*100/(4100-2900);
+      battery_level = (cur_battery_mv - 2900)*100/(4150-2900);
     }
 
     if (battery_level == 0) {
@@ -964,4 +901,42 @@ void bargo_delete_bond()
     // 删除配对ID
     err_code = pm_peer_delete(m_peer_id);
     APP_ERROR_CHECK(err_code);
+}
+
+// 发送系统按键
+void bargo_ble_send_system(uint16_t data) 
+{
+    if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
+        return;
+    }
+    uint32_t err_code = ble_hids_inp_rep_send(&m_hids,
+    COMPOSITE_REPORT_INDEX_SYSTEM, SYSTEM_REPORT_SIZE, (uint8_t*)&data, m_conn_handle);
+    if ((err_code != NRF_SUCCESS) &&
+      (err_code != NRF_ERROR_INVALID_STATE) &&
+      (err_code != NRF_ERROR_RESOURCES) &&
+      (err_code != NRF_ERROR_BUSY) &&
+      (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+     )
+    {
+        APP_ERROR_HANDLER(err_code);
+    }
+}
+
+// 发送媒体按键
+void bargo_ble_send_consumer(uint16_t data) 
+{
+    if (m_conn_handle == BLE_CONN_HANDLE_INVALID) {
+        return;
+    }
+    uint32_t err_code = ble_hids_inp_rep_send(&m_hids,
+    COMPOSITE_REPORT_INDEX_CONSUMER, CONSUMER_REPORT_SIZE, (uint8_t*)&data, m_conn_handle);
+    if ((err_code != NRF_SUCCESS) &&
+      (err_code != NRF_ERROR_INVALID_STATE) &&
+      (err_code != NRF_ERROR_RESOURCES) &&
+      (err_code != NRF_ERROR_BUSY) &&
+      (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+     )
+    {
+        APP_ERROR_HANDLER(err_code);
+    }
 }
